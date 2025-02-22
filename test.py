@@ -10,6 +10,15 @@ from langchain_community.chat_models import ChatOpenAI
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 
+from dotenv import load_dotenv
+
+import requests
+import PIL
+
+load_dotenv()
+key = os.getenv("OPENAI_KEY")
+
+# @tool
 hint_prompt_template = ChatPromptTemplate([
     ("system", "You are a helpful math tutor that will get hints any explain concepts in any problems you are asked about"),
     ("human", "I am struggling with understanding this problem:\n"
@@ -21,18 +30,18 @@ hint_prompt_template = ChatPromptTemplate([
 def take_screenshot():
     """Take a screenshot and return a description of the content within a red circle on the screenshot"""
     screenshot = ImageGrab.grab()
-    screenshot.show()
+    return screenshot
 
-    screenshot_bytes = screenshot.convert('RGB').tobytes()
+    # screenshot_bytes = screenshot.convert('RGB').tobytes()
 
-    base64_screenshot = base64.b64encode(screenshot_bytes).decode('utf-8')
+    # base64_screenshot = base64.b64encode(screenshot_bytes).decode('utf-8')
 
-    return base64_screenshot
+    # return base64_screenshot
 
 
 def generate_summary(image_url, prompt):
     # Initialize the model
-    model = ChatOpenAI(model="gpt-4-vision-preview", max_tokens=1024)
+    model = ChatOpenAI(model="gpt-4o", max_tokens=1024)
 
     # Create a message with the image
     message = model.invoke(
@@ -52,8 +61,7 @@ def generate_summary(image_url, prompt):
 
 def main():
     # Setup the API Key for OpenAI
-    if "OPENAI_API_KEY" not in os.environ:
-        os.environ["OPENAI_API_KEY"] = getpass.getpass("Provide your OpenAI API Key")
+    os.environ["OPENAI_KEY"] = str(key)
 
     # Open LangSmith
     uid = uuid.uuid4().hex[:6]
@@ -64,12 +72,13 @@ def main():
     os.environ["LANGCHAIN_PROJECT"]=project_name
 
     # Take a Screenshot
-    screenshot = ImageGrab.grab()
-    screenshot.show()
+    screenshot = take_screenshot()
+    screenshot.save("screenshot.png")
+    url = r"screenshot.png"
 
-    # Get the image summary
+    # # # Get the image summary
     prompt = """What's in this image?"""
-    res = generate_summary(screenshot, prompt)
+    res = generate_summary(url, prompt)
     print(res)
 
 
