@@ -65,12 +65,17 @@ def generate_summary(image_url, prompt, model):
 
     return message.content
 
-def test_image_prompts():
-    data_directory = os.fsencode("data")
-
+def test_image_prompts(model):
+    data_directory = "data"
     for file in os.listdir(data_directory):
-        print("testing image:", file)
         full_path = os.path.join(data_directory, file)
+        full_path = full_path.replace("\\", "/")
+        if file.startswith("graph"):
+            print("testing image:", file)
+            image_data_url = local_image_to_data_url(full_path)
+            prompt = "What is this graph"
+            res = generate_summary(image_data_url, prompt, model)
+            print(res)
 
 def main():
     # Setup the API Key for OpenAI
@@ -94,9 +99,11 @@ def main():
     model = ChatOpenAI(model="gpt-4o", max_tokens=1024)
 
     # # # Get the image summary
-    prompt = """What's in this image?"""
-    res = generate_summary(image_data_url, prompt, model)
-    print(res)
+    # prompt = """What's in this image?"""
+    # res = generate_summary(image_data_url, prompt, model)
+    # print(res)
+
+    test_image_prompts(model)
 
 
 if __name__ == '__main__':
