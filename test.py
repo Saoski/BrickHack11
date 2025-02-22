@@ -59,16 +59,20 @@ def take_screenshot():
     # return base64_screenshot
 
 
-def generate_summary(image_url, prompt):
-    # Initialize the model
-    model = ChatOpenAI(model="gpt-4o", max_tokens=1024)
-
+def generate_summary(image_url, prompt, model):
     # Create a message with the image
     message = model.invoke([HumanMessage(
         content=[{"type": "text", "text": prompt},
             {"type": "image_url", "image_url": {"url": image_url}, }])])
 
     return message.content
+
+def test_image_prompts():
+    data_directory = os.fsencode("data")
+
+    for file in os.listdir(data_directory):
+        print("testing image:", file)
+        full_path = os.path.join(data_directory, file)
 
 def find_rectangles(image_path):
     cascade = cv2.CascadeClassifier('path_to_harrcascade.xml')
@@ -98,10 +102,12 @@ def main():
     screenshot_file_path = r"screenshots/screenshot.png"
     screenshot.save(screenshot_file_path)
     image_data_url = local_image_to_data_url(screenshot_file_path)
+    # Initialize the model
+    model = ChatOpenAI(model="gpt-4o", max_tokens=1024)
 
     # Get the image summary
     prompt = """What's in this image?"""
-    res = generate_summary(image_data_url, prompt)
+    res = generate_summary(image_data_url, prompt, model)
     print(res)
 
 
