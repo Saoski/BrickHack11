@@ -1,9 +1,16 @@
 import base64
-import matplotlib.pyplot as plt
 
 from langchain.tools import tool
+from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
 
 import pyscreenshot as ImageGrab
+
+hint_prompt_template = ChatPromptTemplate([
+    ("system", "You are a helpful math tutor that will get hints any explain concepts in any problems you are asked about"),
+    ("human", "I am struggling with understanding this problem:\n"
+              "{problem_description}\n"
+              "Can you give me advice?")
+])
 
 @tool
 def take_screenshot():
