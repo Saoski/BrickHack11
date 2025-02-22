@@ -5,6 +5,7 @@ import os
 import uuid
 from mimetypes import guess_type
 
+import numpy as np
 import pyscreenshot as ImageGrab
 from langchain.tools import tool
 from langchain_community.chat_models import ChatOpenAI
@@ -17,6 +18,7 @@ from dotenv import load_dotenv
 import requests
 import PIL
 from langchain_core.prompts.image import ImagePromptTemplate
+from matplotlib import pyplot as plt
 
 import cv2
 
@@ -85,7 +87,38 @@ def find_rectangles(image_path):
 
     rectangles, threshold = cv2.threshold(gray_image, 50, 255, 0)
 
-    return rectangles
+    return rectangles, threshold
+
+
+def detect_red_rectangle(image):
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    lower_red = np.array([0, 100, 100])
+    upper_red = np.array([10, 255, 255])
+    mask1 = cv2.inRange(hsv, lower_red, upper_red)
+
+    lower_red = np.array([170, 100, 100])
+    upper_red = np.array([180, 255, 255])
+    mask2 = cv2.inRange(hsv, lower_red, upper_red)
+
+    mask = mask1 + mask2
+
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL,
+                                   cv2.CHAIN_APPROX_SIMPLE)
+
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        return x, y, w, h
+    return None
+
+def test_red_rectangles():
+    test_image_path = "data/problem4.png"
+    image = cv2.imread(test_image_path)
+    x, y, w, h = detect_red_rectangle(image)
+    cropped_image = image[y:y + h, x:x + w]
+    plt.imshow(cropped_image)
+    plt.show()
 
 
 def main():
@@ -102,7 +135,7 @@ def main():
 
     # Take a Screenshot
     # screenshot = take_screenshot()
-    screenshot_file_path = r"data/graph1.png"
+    screenshot_file_path = r"data/problem2.png"
     # screenshot.save(screenshot_file_path)
     image_data_url = local_image_to_data_url(screenshot_file_path)
 
@@ -111,12 +144,12 @@ def main():
 
     # Get the image summary
     prompt = """What's in this image?"""
-    res = generate_summary(image_data_url, prompt, model)
-    print(res)
+    #res = generate_summary(image_data_url, prompt, model)
+    #print(res)
 
 
     # Find red rectangles from the image
-    rectangles = find_rectangles(screenshot_file_path)
+    test_red_rectangles()
 
 if __name__ == '__main__':
     main()
