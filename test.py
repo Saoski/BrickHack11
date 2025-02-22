@@ -80,12 +80,10 @@ def test_image_prompts(model):
             print(res)
 
 def find_rectangles(image_path):
-    cascade = cv2.CascadeClassifier('path_to_harrcascade.xml')
-
     image = cv2.imread(image_path)
-    gray_image = cv2.cvtColot(image, cv2.COLOR_BGR2GRAY)
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    rectangles = cascade.detectMultiScale(gray_image, scaleFactor=1.1, minNeighbors=5)
+    rectangles, threshold = cv2.threshold(gray_image, 50, 255, 0)
 
     return rectangles
 
@@ -103,9 +101,9 @@ def main():
     os.environ["LANGCHAIN_PROJECT"] = project_name
 
     # Take a Screenshot
-    screenshot = take_screenshot()
-    screenshot_file_path = r"screenshots/screenshot.png"
-    screenshot.save(screenshot_file_path)
+    # screenshot = take_screenshot()
+    screenshot_file_path = r"data/graph1.png"
+    # screenshot.save(screenshot_file_path)
     image_data_url = local_image_to_data_url(screenshot_file_path)
 
     # Initialize the model
@@ -118,7 +116,7 @@ def main():
 
 
     # Find red rectangles from the image
-    rectangles = find_rectangles(image_data_url)
+    rectangles = find_rectangles(screenshot_file_path)
 
 if __name__ == '__main__':
     main()
