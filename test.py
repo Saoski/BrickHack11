@@ -61,7 +61,7 @@ def generate_summary(image_url, prompt):
 
 def main():
     # Setup the API Key for OpenAI
-    os.environ["OPENAI_KEY"] = str(key)
+    os.environ["OPENAI_API_KEY"] = str(key)
 
     # Open LangSmith
     uid = uuid.uuid4().hex[:6]
@@ -73,7 +73,7 @@ def main():
 
     # Take a Screenshot
     screenshot = take_screenshot()
-    screenshot.save("screenshot.png")
+    screenshot.save("screenshots/screenshot.png")
     url = r"screenshot.png"
 
     # # # Get the image summary
