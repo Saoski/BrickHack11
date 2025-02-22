@@ -1,13 +1,13 @@
 import base64
 import matplotlib.pyplot as plt
 
-from langchain.tools import BaseTool
+from langchain.tools import tool
 
 import pyscreenshot as ImageGrab
 
-
-def run(self):
-
+@tool
+def take_screenshot():
+    """Take a screenshot and return a description of the content within a red circle on the screenshot"""
     screenshot = ImageGrab.grab()
 
     screenshot_bytes = screenshot.convert('RGB').tobytes()
