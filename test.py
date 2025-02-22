@@ -18,6 +18,8 @@ import requests
 import PIL
 from langchain_core.prompts.image import ImagePromptTemplate
 
+import cv2
+
 load_dotenv()
 key = os.getenv("OPENAI_KEY")
 
@@ -77,6 +79,17 @@ def test_image_prompts(model):
             res = generate_summary(image_data_url, prompt, model)
             print(res)
 
+def find_rectangles(image_path):
+    cascade = cv2.CascadeClassifier('path_to_harrcascade.xml')
+
+    image = cv2.imread(image_path)
+    gray_image = cv2.cvtColot(image, cv2.COLOR_BGR2GRAY)
+
+    rectangles = cascade.detectMultiScale(gray_image, scaleFactor=1.1, minNeighbors=5)
+
+    return rectangles
+
+
 def main():
     # Setup the API Key for OpenAI
     os.environ["OPENAI_API_KEY"] = str(key)
@@ -98,13 +111,14 @@ def main():
     # Initialize the model
     model = ChatOpenAI(model="gpt-4o", max_tokens=1024)
 
-    # # # Get the image summary
-    # prompt = """What's in this image?"""
-    # res = generate_summary(image_data_url, prompt, model)
-    # print(res)
+    # Get the image summary
+    prompt = """What's in this image?"""
+    res = generate_summary(image_data_url, prompt, model)
+    print(res)
 
-    test_image_prompts(model)
 
+    # Find red rectangles from the image
+    rectangles = find_rectangles(image_data_url)
 
 if __name__ == '__main__':
     main()
