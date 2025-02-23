@@ -16,7 +16,7 @@ from langchain_core.prompts import ChatPromptTemplate, \
 from dotenv import load_dotenv
 
 import requests
-import PIL 
+import PIL
 from langchain_core.prompts.image import ImagePromptTemplate
 from matplotlib import pyplot as plt
 
@@ -27,9 +27,10 @@ key = os.getenv("OPENAI_KEY")
 
 hint_prompt_template = ChatPromptTemplate([("system",
                                             "You are a helpful math tutor that will get hints any explain concepts in any problems you are asked about"),
-    ("human", "I am struggling with understanding this problem:\n"
-              "{problem_description}\n"
-              "Can you give me advice?")])
+                                           ("human",
+                                            "I am struggling with understanding this problem:\n"
+                                            "{problem_description}\n"
+                                            "Can you give me advice?")])
 
 
 # Function to encode a local image into data URL
@@ -65,9 +66,21 @@ def generate_summary(image_url, prompt, model):
     # Create a message with the image
     message = model.invoke([HumanMessage(
         content=[{"type": "text", "text": prompt},
-            {"type": "image_url", "image_url": {"url": image_url}, }])])
+                 {"type": "image_url", "image_url": {"url": image_url}, }])])
 
     return message.content
+
+
+def provide_hints(image_url, model):
+    """Returns a list of possible hints for the given image"""
+    message = model.invoke([HumanMessage(
+        content=[{"type": "text",
+                  "text": "Can you give me advice on how to solve this problem? Don't repeat the problem back. Just immediately respond with the first step and put each step on a new line."},
+                 {"type": "image_url", "image_url": {"url": image_url}, }]
+    )])
+    print(message.content)
+    return message.content.split("\n")
+
 
 def test_image_prompts(model):
     data_directory = "data"
@@ -80,6 +93,7 @@ def test_image_prompts(model):
             prompt = "What is this graph"
             res = generate_summary(image_data_url, prompt, model)
             print(res)
+
 
 def find_rectangles(image_path):
     image = cv2.imread(image_path)
@@ -111,6 +125,7 @@ def detect_red_rectangle(image):
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
         return x, y, w, h
     return None
+
 
 def test_red_rectangles(image_path):
     image = cv2.imread(image_path)
@@ -144,9 +159,8 @@ def main():
 
     # Get the image summary
     prompt = """What's in this image?"""
-    #res = generate_summary(image_data_url, prompt, model)
-    #print(res)
-
+    # res = generate_summary(image_data_url, prompt, model)
+    # print(res)
 
     # Find red rectangles from the image
     cropped_image = test_red_rectangles("data/problem4.png")
@@ -156,10 +170,10 @@ def main():
 
     data_url = local_image_to_data_url("crop.png")
 
-    res = generate_summary(data_url, prompt, model)
-    print(res)
-
-
+    # res = generate_summary(data_url, prompt, model)
+    hints = provide_hints(data_url, model)
+    # print(res)
+    print(hints)
 
 
 if __name__ == '__main__':
