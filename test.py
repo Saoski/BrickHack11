@@ -105,7 +105,7 @@ def find_rectangles(image_path):
 
 
 def detect_red_rectangle(image):
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
 
     lower_red = np.array([0, 100, 100])
     upper_red = np.array([10, 255, 255])
@@ -120,15 +120,21 @@ def detect_red_rectangle(image):
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL,
                                    cv2.CHAIN_APPROX_SIMPLE)
 
+    max_area = 0
+    largest_contour = 0, 0, 0, 0
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        return x, y, w, h
-    return None
+        area = w * h
+        if area > max_area:
+            max_area = area
+            largest_contour = x, y, w, h
+
+    return largest_contour
 
 
 def test_red_rectangles(image_path):
     image = cv2.imread(image_path)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     x, y, w, h = detect_red_rectangle(image)
     cropped_image = image[y:y + h, x:x + w]
     # plt.imshow(cropped_image)
@@ -149,10 +155,10 @@ def main():
     os.environ["LANGCHAIN_PROJECT"] = project_name
 
     # Take a Screenshot
-    # screenshot = take_screenshot()
-    screenshot_file_path = r"data/problem2.png"
-    # screenshot.save(screenshot_file_path)
-    image_data_url = local_image_to_data_url(screenshot_file_path)
+    screenshot = take_screenshot()
+    screenshot_file_path = r"screenshots/screenshot.png"
+    screenshot.save(screenshot_file_path)
+    # image_data_url = local_image_to_data_url(screenshot_file_path)
 
     # Initialize the model
     model = ChatOpenAI(model="gpt-4o", max_tokens=1024)
@@ -163,7 +169,7 @@ def main():
     # print(res)
 
     # Find red rectangles from the image
-    cropped_image = test_red_rectangles("data/problem4.png")
+    cropped_image = test_red_rectangles(screenshot_file_path)
 
     c_image = PIL.Image.fromarray(cropped_image)
     c_image.save("crop.png")
