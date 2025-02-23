@@ -16,7 +16,7 @@ from langchain_core.prompts import ChatPromptTemplate, \
 from dotenv import load_dotenv
 
 import requests
-import PIL
+import PIL 
 from langchain_core.prompts.image import ImagePromptTemplate
 from matplotlib import pyplot as plt
 
@@ -112,13 +112,13 @@ def detect_red_rectangle(image):
         return x, y, w, h
     return None
 
-def test_red_rectangles():
-    test_image_path = "data/problem4.png"
-    image = cv2.imread(test_image_path)
+def test_red_rectangles(image_path):
+    image = cv2.imread(image_path)
     x, y, w, h = detect_red_rectangle(image)
     cropped_image = image[y:y + h, x:x + w]
-    plt.imshow(cropped_image)
-    plt.show()
+    # plt.imshow(cropped_image)
+    # plt.show()
+    return cropped_image
 
 
 def main():
@@ -149,7 +149,18 @@ def main():
 
 
     # Find red rectangles from the image
-    test_red_rectangles()
+    cropped_image = test_red_rectangles("data/problem4.png")
+
+    c_image = PIL.Image.fromarray(cropped_image)
+    c_image.save("crop.png")
+
+    data_url = local_image_to_data_url("crop.png")
+
+    res = generate_summary(data_url, prompt, model)
+    print(res)
+
+
+
 
 if __name__ == '__main__':
     main()
